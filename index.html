@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prague Ultimate</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="script.js" defer></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Prague Ultimate TrueSkill</h1>
+        
+        <section class="card">
+            <h2>🏆 Top 5 Hráčů</h2>
+            <div id="leaderboard-loading">Načítám žebříček...</div>
+            <ol id="leaderboard-list"></ol>
+        </section>
+
+        <section class="card">
+            <h2>🚀 Team Builder</h2>
+            
+            <div class="form-group">
+                <label for="player-names">Vlož jména (každé na nový řádek):</label>
+                <textarea id="player-names" rows="10" placeholder="Freny
+Jezek
+MP
+..."></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="team-count">Počet týmů:</label>
+                <input type="number" id="team-count" value="2" min="2">
+            </div>
+
+            <button id="build-button">Rozdělit týmy</button>
+        </section>
+
+        <section class="card">
+            <h2>Vygenerované týmy</h2>
+            <div id="teams-output">
+                <p>Zde se zobrazí týmy po kliknutí na tlačítko "Rozdělit týmy".</p>
+            </div>
+        </section>
+    </div>
+</body>
+</html>
