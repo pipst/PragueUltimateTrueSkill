@@ -9,8 +9,14 @@ import seaborn as sns
 
 import PragueLionPlayer
 
-DEFAULT_GAMES_DB_PATH = "games_db.csv"
-DEFAULT_LEADERBOARD_FILE = "leaderboard.csv"
+DEFAULT_GAMES_DB_PATH = "ranking_files/games_db.csv"
+DEFAULT_LEADERBOARD_FILE = "ranking_files/leaderboard.csv"
+RANKING_FILE = "ranking_files/private_ranking.csv"
+
+# TrueSkill default values
+MU = 25
+SIGMA = (25/3)
+K = 3 # TrueSkill is computed as Mu - K*Sigma
 
 def parse_team(team_string: str) -> list[str]:
     """Parse a team string into a list of player names as strings.
@@ -140,7 +146,7 @@ def initialize_players_and_fetch_their_ratings_and_attendance(player_names, game
         game, result = parse_game_row(row)
         collections.append(game)
         results.append(result)
-    game_history = History(composition=collections, results=results, p_draw=(1/6))
+    game_history = History(composition=collections, results=results, p_draw=(1/6), mu=MU, sigma=SIGMA)
     # It is not clear how to set the parameter p_draw.
     # A larger p_draw will mean less information is gained from a draw, as it is less rare, but more information is gained from a win.
     # For now, we opt for a value of 1/6 computed from the seen data. With more games play, we will update this.
@@ -160,9 +166,9 @@ def initialize_players_and_fetch_their_ratings_and_attendance(player_names, game
     return prague_lion_players
 
 
-def dump_leaderboard(prague_lion_players: list[PragueLionPlayer], leaderboard_file: str = DEFAULT_LEADERBOARD_FILE, leaderboards_practice_threshold = 2) -> None:
+def dump_leaderboard_and_rankings(prague_lion_players: list[PragueLionPlayer], leaderboard_file: str, ranking_file: str, leaderboards_practice_threshold: int = 3, leaderboards_game_threshold: int = 8) -> None:
     """
-    Dump the players in TrueSkill order to csv.
+    Dump the players in TrueSkill order to csv files - the leaderboard holds top 10 players with enough data, the ranking holds all players.
     The leaderboards_practice_threshold specifies how many practices one has to attend to get into the leaderboad (rankings are computed nevertheless). The default is two.
     Columns: name, rank, true_skill, mu, sigma, game, practices
     """
@@ -172,24 +178,31 @@ def dump_leaderboard(prague_lion_players: list[PragueLionPlayer], leaderboard_fi
         key=lambda p: (-p.true_skill, p.name.lower())
     )
 
-    # only dump those players with at least 2 practices
-    players_filtered = [player for player in players_sorted if player.number_of_practices >= 2] 
+    # only dump those players with at least 3 practices and 8 games
+    players_filtered = [player for player in players_sorted if player.number_of_practices >= leaderboards_practice_threshold and player.number_of_games >= leaderboards_game_threshold] 
+    # take top 10:
+    top_10 = players_filtered[:10]
 
-
-
-    # Write CSV
+    # Write CSV - the top 10
     with open(leaderboard_file, "w", encoding="utf-8", newline="") as f:
         f.write("name,rank,true_skill,mu,sigma,practices,games\n")
-        for idx, player in enumerate(players_filtered, start=1):
+        for idx, player in enumerate(top_10, start=1):
+            f.write(f"{player.name},{idx},{player.true_skill:.6f},{player.mu:.6f},{player.sigma:.6f},{player.number_of_practices},{player.number_of_games}\n")
+
+    # Now write the rankings - that is, all players' rankings
+    with open(ranking_file, "w", encoding="utf-8", newline="") as f:
+        f.write("name,rank,true_skill,mu,sigma,practices,games\n")
+        for idx, player in enumerate(players_sorted, start=1):
             f.write(f"{player.name},{idx},{player.true_skill:.6f},{player.mu:.6f},{player.sigma:.6f},{player.number_of_practices},{player.number_of_games}\n")
 
 
 
-def main(games_file: str = DEFAULT_GAMES_DB_PATH, leaderboard_file: str = DEFAULT_LEADERBOARD_FILE, allowed_names_path: str|None = None) -> None:
+def main(games_file: str = DEFAULT_GAMES_DB_PATH, leaderboard_file: str = DEFAULT_LEADERBOARD_FILE, ranking_file = RANKING_FILE, allowed_names_path: str|None = None) -> None:
     """1. Load all player names from the games database. If the database is not specified, use the default 'games_db.csv' path. Optionally, allow only players specified in a separate file.
        2. Read the games csv from the same file as in the previous step.
        3. Compute the player ratings from the game history. Store them in PragueLionPlayer objects.
        4. Dump the leaderboard to a CSV file. If not specified, dump into the default 'leaderboard.csv' path.
+       5. Dump all the rankings to a (private by gitignore) file. If not specified, dump into the default 'private_ranking.csv' path.
     """
     player_names = load_all_player_names(games_file, allowed_names_path)
 
@@ -197,9 +210,9 @@ def main(games_file: str = DEFAULT_GAMES_DB_PATH, leaderboard_file: str = DEFAUL
     games_df = pd.read_csv(games_file)
     
     prague_lion_players_with_ratings = initialize_players_and_fetch_their_ratings_and_attendance(player_names, games_df)
-    dump_leaderboard(prague_lion_players_with_ratings, leaderboard_file)
+    dump_leaderboard_and_rankings(prague_lion_players_with_ratings, leaderboard_file, ranking_file)
 
 
 if __name__ == "__main__":
-    main()
+    main(allowed_names_path="ranking_files/allowed_player_names.txt")
 

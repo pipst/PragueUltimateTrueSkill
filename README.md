@@ -21,14 +21,14 @@ TODO: why is it better.
 Applying the TTT algorithm for Ultimate Frisbee was inspired by Jake Smart, who has done this for the College team Brownian Motion.
 
 #### Usage
-- Store the game results in the csv file ```games_db.csv```. The expected dataframe has 4 columns: ```date,draw,winning_team,losing_team```. If the game ended in a draw, let the ```draw``` column be 1, otherwise, let it be zero. If the game was not a draw, the winning team comes first (in the `winning_team` column), the losing team second (in the ```losing_team``` column). Teams are stored in a list and players are separated via the ```|``` sign, e.g.: ```[Freny|Jezek|MP|Karlos|B|FilaH]```. An examplary column thus looks like this: 
+- Store the game results in the csv file ```games_db.csv``` (in the `ranking_files` folder). The expected dataframe has 4 columns: ```date,draw,winning_team,losing_team```. If the game ended in a draw, let the ```draw``` column be 1, otherwise, let it be zero. If the game was not a draw, the winning team comes first (in the `winning_team` column), the losing team second (in the ```losing_team``` column). Teams are stored in a list and players are separated via the ```|``` sign, e.g.: ```[Freny|Jezek|MP|Karlos|B|FilaH]```. An examplary column thus looks like this: 
 
 ```csv
 2025-10-29,0,[Freny|MP|B|FilaH],[Jazz|Dejv|VojtaR|Vilda]
 ```
 
-- Run the ```main.py``` module, which will run the TTT algorithm from the stored games, will compute the player rankings and dump them into the ```leaderboard.csv``` file. If you want to use other input and output files than the default ones, pass them as params ```games_file``` and ```leaderoard_file``` to main. Only players passing the attendence threshold (the default is two practices, configure in the `dump_leaderboard` function) are eligible to appear in the leaderboard.
-- Optionally, use the `allowed names file` param to specify a file that holds all allowed player names, and if there is an unrecognized player name loaded when computing the ratings, an error will be raised (as a safeguard against typos).
+- Run the ```main.py``` module, which will run the TTT algorithm from the stored games, will compute the player rankings and dump them into the ```leaderboard.csv``` file (in the `ranking_files` folder). If you want to use other input and output files than the default ones, pass them as params ```games_file``` and ```leaderoard_file``` to main. Only players passing the attendence threshold (the default is three practices, configure in the `dump_leaderboard` function) are eligible to appear in the leaderboard. Only the top 10 players will appear in the public leaderboard, the rest is in a (private by gitignore) ranking file (in the `ranking_files` folder).
+- Optionally, use the `allowed_names_file` param to specify a file that holds all allowed player names, and if there is an unrecognized player name loaded when computing the ratings, an error will be raised (as a safeguard against typos).
 
 
 #### Requirements

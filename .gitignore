@@ -1,3 +1,4 @@
 __pycache__
-allowed_player_names.txt
-
+ranking_files/allowed_player_names.txt
+ranking_files/private_ranking.csv
+ranking_files/games_db.csv
